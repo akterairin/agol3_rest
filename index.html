@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Hello, AGOL!</title>
+  <title>AGOL REST API</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="" />
@@ -19,8 +19,10 @@
 "esri/views/MapView",   
 "esri/Graphic",  
 "esri/layers/GraphicsLayer",   
-"esri/layers/FeatureLayer"
-], function(esriConfig,Map, MapView, Graphic, GraphicsLayer,FeatureLayer) {
+"esri/layers/FeatureLayer",
+"esri/widgets/Editor",
+"esri/widgets/Legend"
+], function(esriConfig,Map, MapView, Graphic, GraphicsLayer,FeatureLayer,Editor,Legend) {
 
       esriConfig.apiKey = "AAPKbbf1d614464f43d6893e89040496e546zaR0zSPYnguI_N0zab0yje30u1aq2GS4mz7fzZ78FQ-aPa8vIq4PFEd2C6ceqofz";
       const map = new Map({
@@ -207,12 +209,98 @@ definitionExpression: "Fac_Type = 'heliport'"
 
 
  map.add(heliportLayer);
+
+
+
+
+
+
+ const myAirportsRederer = {
+        "type": "simple",
+        "symbol": {
+          "type": "picture-marker",
+          "url": "https://safaei-mo.github.io/AGOL_Rest/airplane.png",
+          "width": "18px",
+          "height": "18px"
+        }
+      }
+
+
+      const MyairportLabels = {
+  symbol: {
+    type: "text",
+    color: "#FFFFFF",
+    haloColor: "#5E8D74",
+    haloSize: "2px",
+    font: {
+      size: "16px",
+      family: "Noto Sans",
+      style: "italic",
+      weight: "normal"
+    }
+  },
+  labelPlacement: "above-center",
+  labelExpressionInfo: {
+    expression: "$feature.Airport_Code"
+  }
+};
+
+
+
+//adding the const for the feature layer
+const myAirports = new FeatureLayer({
+ url: "https://services.arcgis.com/LBbVDC0hKPAnLRpO/arcgis/rest/services/Airports_Visited/FeatureServer",
+ renderer: myAirportsRederer,
+ labelingInfo: [MyairportLabels],
+ //adding the popup here
+ outFields: ["Airport_Code"],
+
 });
 
+//adding the feature layer to the map
+map.add(myAirports);
+
+// Set the point layer's LayerInfo
+const pointInfos = {
+ layer: myAirports
+}
+
+// Begin Editor constructor
+const editor = new Editor({
+ view: view,
+ layerInfos: [pointInfos]
+ }); // End Editor constructor
+
+// Add the widget to the view
+view.ui.add(editor, "top-right");
 
 
 
-    
+
+
+let legend = new Legend({
+  view: view,
+  layerInfos: [{
+    layer: myAirports,
+    title: 'Airports I  have Visited'
+  },
+  {
+    layer: usaeduLayer,
+    title: 'Colleges and Universities'
+  },
+  {
+    layer: airportLayer,
+    title: 'Airports'
+  },
+  {
+    layer: heliportLayer,
+    title: 'Heliports'
+  }]
+});
+
+view.ui.add(legend, "bottom-left");
+
+});
   </script>
 
   <!-- css to make a full screen map -->
